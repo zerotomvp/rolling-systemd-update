@@ -1,3 +1,3 @@
 #!/bin/sh -l
 
-dotnet /app/update-readme-action.dll $@
+dotnet /app/ZeroToMvp.Github.Actions.RollingSystemdUpdate.dll $@
