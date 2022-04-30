@@ -1,0 +1,37 @@
+name: ASP.NET Core systemd service rolling update.
+description: Perform a rolling update to an set of hosts running an ASP.NET Core service with systemd
+branding:
+  icon: arrow-right-circle
+  color: red
+inputs:
+  serviceName:
+    description: Name of the systemd service.
+    required: true
+  hosts:
+    description: Host(s) to run the update on.
+    required: true
+  username:
+    description: SSH username
+    required: false
+    default: root
+  port:
+    description: SSH port
+    required: false
+    default: '22'
+  key: 
+    description: SSH key
+    required: true
+  source:
+    description: Path to built files
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.serviceName }}
+    - ${{ inputs.hosts }}
+    - ${{ inputs.username }}
+    - ${{ inputs.port }}
+    - ${{ inputs.key }}
+    - ${{ inputs.source }}
+  entrypoint: /app/entrypoint.sh
