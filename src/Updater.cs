@@ -68,7 +68,7 @@ class Updater : IDisposable
         // copy permissions + ownership
 
         CopyPermissions(lastPath, serviceDef.WorkingDirectory);
-        CopyPermissions(lastPath, serviceDef.WorkingDirectory);
+        RecursiveCopyOwnership(lastPath, serviceDef.WorkingDirectory);
 
         // start service
 
@@ -82,7 +82,8 @@ class Updater : IDisposable
         {
             if (CheckHttpStatus(firstBinding))
             {
-                break;
+                Console.WriteLine("Update completed.");
+                return;
             }
 
             Thread.Sleep(1000);
@@ -93,6 +94,8 @@ class Updater : IDisposable
 
     public void Rollback()
     {
+        Console.WriteLine("Initiating rollback");
+
         var serviceDef = GetServiceDefinition();
 
         string lastPath = $"{serviceDef.WorkingDirectory}.last";
@@ -126,7 +129,8 @@ class Updater : IDisposable
         {
             if (CheckHttpStatus(firstBinding))
             {
-                break;
+                Console.WriteLine("Rollback completed.");
+                return;
             }
 
             Thread.Sleep(1000);
@@ -152,49 +156,44 @@ class Updater : IDisposable
 
     private void ForceRemovePath(string path)
     {
-        ssh.RunCommand($"rm -rf {path}");
-    }
-
-    private void RecursiveCopy(string src, string dest)
-    {
-        ssh.RunCommand($"cp -R {src} {dest}");
+        RunAndLogCommand($"rm -rf {path}");
     }
 
     private void MovePath(string src, string dest)
     {
-        ssh.RunCommand($"mv {src} {dest}");
+        RunAndLogCommand($"mv {src} {dest}");
     }
 
     private void CopyPermissions(string src, string dest)
     {
-        ssh.RunCommand($"chmod --reference={src} {dest}");
+        RunAndLogCommand($"chmod --reference={src} {dest}");
     }
 
-    private void CopyOwnership(string src, string dest)
+    private void RecursiveCopyOwnership(string src, string dest)
     {
-        ssh.RunCommand($"chmod --reference={src} {dest}");
+        RunAndLogCommand($"chmod -R --reference={src} {dest}");
     }
 
     private bool IsServiceRunning()
     {
-        var cmd = ssh.RunCommand($"systemctl is-active --quiet {Args.ServiceName}");
+        var cmd = RunAndLogCommand($"systemctl is-active --quiet {Args.ServiceName}");
 
         return cmd.ExitStatus == 0;
     }
 
     private void StopService()
     {
-        ssh.RunCommand($"systemctl stop {Args.ServiceName}");
+        RunAndLogCommand($"systemctl stop {Args.ServiceName}");
     }
 
     private void StartService()
     {
-        ssh.RunCommand($"systemctl start {Args.ServiceName}");
+        RunAndLogCommand($"systemctl start {Args.ServiceName}");
     }
 
     private bool CheckHttpStatus(string binding, string path = "/api/health", int expectedStatus = 200)
     {
-        var cmd = ssh.RunCommand($"curl --write-out \"%{{http_code}}\" --output /dev/null --silent {binding}{path}");
+        var cmd = RunAndLogCommand($"curl --write-out \"%{{http_code}}\" --output /dev/null --silent {binding}{path}");
 
         return cmd.Result == expectedStatus.ToString();
     }
@@ -222,15 +221,26 @@ class Updater : IDisposable
 
         foreach (var destDirectory in destDirectories)
         {
-            ssh.RunCommand($"mkdir -p {destDirectory}");
+            RunAndLogCommand($"mkdir -p {destDirectory}");
         }
 
         foreach (var file in files)
         {
+            Console.WriteLine($"Transfering file {file.Src} => {file.Dest}");
+
             using var fileStream = File.OpenRead(file.Src);
 
             sftp.UploadFile(fileStream, file.Dest);
         }
+    }
+
+    private SshCommand RunAndLogCommand(string commandText)
+    {
+        var command = ssh.RunCommand(commandText);
+
+        Console.WriteLine("\t{0}", command.Result);
+
+        return command;
     }
 
     private void OnHostKeyReceived(object sender, HostKeyEventArgs e)
