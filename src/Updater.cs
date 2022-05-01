@@ -143,13 +143,19 @@ class Updater : IDisposable
 
         var kvs = Utils.ParseKeyValues(cmd.Result);
 
-        return new()
+        try
         {
-            WorkingDirectory = kvs["WorkingDirectory"],
-            User = kvs["User"],
-            Environment = kvs["Environment_ASPNETCORE_ENVIRONMENT"],
-            Bindings = Utils.ParseBindings(kvs["Environment_ASPNETCORE_URLS"]).ToArray()
-        };
+            return new()
+            {
+                WorkingDirectory = kvs["WorkingDirectory"],
+                Bindings = Utils.ParseBindings(kvs["Environment_ASPNETCORE_URLS"]).ToArray()
+            };
+        }
+        catch (KeyNotFoundException)
+        {
+            throw new InvalidOperationException(
+                $"The service definition must define the WorkingDirectory and the ASPNETCORE_URLS env variable; found: {cmd.Result}");
+        }
     }
 
     private void ForceRemovePath(string path)
