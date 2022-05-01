@@ -5,7 +5,21 @@ namespace ZeroToMvp.Github.Actions.RollingSystemdUpdate;
 
 public class Program
 {
-    public static void Main()
+    public static int Main()
+    {
+        try
+        {
+            Execute();
+
+            return 0;
+        }
+        catch (Exception)
+        {
+            return 1;
+        }
+    }
+
+    private static void Execute()
     {
         string serviceName = RequireEnvironmentVariable("INPUT_SERVICENAME");
         string[] hosts = RequireEnvironmentVariableAsStrings("INPUT_HOSTS");
@@ -52,11 +66,13 @@ public class Program
         {
             foreach (var updater in updaters)
             {
+                Console.WriteLine("Starting UPDATE of {0}", updater.Args.Host);
+
                 updater.Execute();
 
                 successful.Add(updater);
 
-                Console.WriteLine("{0} successful", updater.Args.Host);
+                Console.WriteLine("UPDATE of {0} successful", updater.Args.Host);
             }
 
             Console.WriteLine("All successful.");
@@ -67,7 +83,11 @@ public class Program
 
             foreach (var updater in successful)
             {
+                Console.WriteLine("Starting ROLLBACK of {0}", updater.Args.Host);
+
                 updater.Rollback();
+
+                Console.WriteLine("ROLLBACK of {0} successful", updater.Args.Host);
             }
         }
         finally

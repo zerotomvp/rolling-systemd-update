@@ -94,8 +94,6 @@ class Updater : IDisposable
 
     public void Rollback()
     {
-        Console.WriteLine("Initiating rollback");
-
         var serviceDef = GetServiceDefinition();
 
         string lastPath = $"{serviceDef.WorkingDirectory}.last";
