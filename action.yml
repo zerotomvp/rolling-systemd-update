@@ -11,6 +11,9 @@ inputs:
   hosts:
     description: Host(s) to run the update on.
     required: true
+  fingerprints:
+    description: Fingerprint(s) for the host(s).
+    required: false
   username:
     description: SSH username
     required: false
