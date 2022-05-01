@@ -175,7 +175,7 @@ class Updater : IDisposable
 
     private void RecursiveCopyOwnership(string src, string dest)
     {
-        RunAndLogCommand($"chmod -R --reference={src} {dest}");
+        RunAndLogCommand($"chown -R --reference={src} {dest}");
     }
 
     private bool IsServiceRunning()
