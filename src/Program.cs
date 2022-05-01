@@ -1,5 +1,9 @@
-﻿if (args.Length != 6) {
-    throw new ArgumentException("Incorrect number of arguments.");
+﻿if (args.Length != 6) 
+{
+    throw new ArgumentOutOfRangeException(
+        nameof(args), 
+        string.Join(", ", args),
+        "Expected 6 arguments");
 }
 
 string serviceName = args[0];
