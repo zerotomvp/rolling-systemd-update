@@ -13,8 +13,10 @@ public class Program
 
             return 0;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.Error.WriteLine("FATAL: {0}", ex);
+
             return 1;
         }
     }
@@ -79,7 +81,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex);
+            Console.Error.WriteLine("UPDATE failed: {0}", ex);
 
             foreach (var updater in successful)
             {
