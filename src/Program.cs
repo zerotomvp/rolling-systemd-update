@@ -89,6 +89,8 @@ public class Program
 
                 Console.WriteLine("ROLLBACK of {0} successful", updater.Args.Host);
             }
+            
+            throw;
         }
         finally
         {
