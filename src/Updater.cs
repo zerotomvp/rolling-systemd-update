@@ -240,9 +240,14 @@ class Updater : IDisposable
 
     private SshCommand RunAndLogCommand(string commandText)
     {
+        Console.WriteLine($"$$ {commandText}");
+
         var command = ssh.RunCommand(commandText);
 
-        Console.WriteLine("\t{0}", command.Result);
+        if (!string.IsNullOrEmpty(command.Result))
+        {
+            Console.WriteLine("\t{0}", command.Result);
+        }
 
         return command;
     }
