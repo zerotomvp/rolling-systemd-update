@@ -243,7 +243,7 @@ class Updater : IDisposable
 
     private SshCommand RunAndLogCommand(string commandText)
     {
-        Console.WriteLine($"$$ {commandText}");
+        Console.WriteLine($"$ {commandText}");
 
         var command = ssh.RunCommand(commandText);
 
