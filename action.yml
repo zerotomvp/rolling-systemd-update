@@ -25,8 +25,8 @@ inputs:
     description: Path to built files
     required: true
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: docker
+  image: Dockerfile
   args:
     - ${{ inputs.serviceName }}
     - ${{ inputs.hosts }}
