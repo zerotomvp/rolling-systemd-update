@@ -221,7 +221,10 @@ class Updater : IDisposable
             })
             .ToArray();
 
-        var destDirectories = files.Select(x => x.DestDirectory).ToArray();
+        var destDirectories = files
+            .Select(x => x.DestDirectory)
+            .Distinct()
+            .ToArray();
 
         foreach (var destDirectory in destDirectories)
         {
