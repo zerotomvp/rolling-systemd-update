@@ -1,5 +1,3 @@
-#!/bin/sh -l
+#!/bin/bash -l
 
 /app/ZeroToMvp.Github.Actions.RollingSystemdUpdate $@
-
-exit $LASTEXITCODE
