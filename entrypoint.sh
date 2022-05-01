@@ -1,5 +1,5 @@
 #!/bin/sh -l
 
-/app/ZeroToMvp.Github.Actions.RollingSystemdUpdate.dll $@
+/app/ZeroToMvp.Github.Actions.RollingSystemdUpdate $@
 
 exit $LASTEXITCODE
