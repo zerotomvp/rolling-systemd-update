@@ -1,5 +1,6 @@
 name: ASP.NET Core systemd service rolling update.
 description: Perform a rolling update to an set of hosts running an ASP.NET Core service with systemd
+author: 'Zero to MVP'
 branding:
   icon: arrow-right-circle
   color: red
