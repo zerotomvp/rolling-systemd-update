@@ -27,11 +27,4 @@ inputs:
 runs:
   using: docker
   image: Dockerfile
-  args:
-    - ${{ inputs.serviceName }}
-    - ${{ inputs.hosts }}
-    - ${{ inputs.username }}
-    - ${{ inputs.port }}
-    - ${{ inputs.key }}
-    - ${{ inputs.source }}
   entrypoint: /app/entrypoint.sh
