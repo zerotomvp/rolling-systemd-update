@@ -18,7 +18,7 @@ The execution flow is:
 
 If probing is successful, the next host is updated.
 
-If probing fails until the end of the tries, then a rollback is initiated for all hosts that succeeded:
+If probing fails until the end of the tries, then a rollback is initiated for all hosts that succeeded and the host that was being updated when the failure occurred:
 - If the service is running, stop it.
 - Delete `{WorkingDirectory}`.
 - Move `{WorkingDirectory}.last` to `{WorkingDirectory}`.

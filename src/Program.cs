@@ -63,12 +63,15 @@ public class Program
             .ToArray();
 
         var successful = new List<Updater>();
+        Updater? inFlight = null;
 
         try
         {
             foreach (var updater in updaters)
             {
                 Console.WriteLine("Starting UPDATE of {0}", updater.Args.Host);
+
+                inFlight = updater;
 
                 updater.Execute();
 
@@ -77,15 +80,23 @@ public class Program
                 Console.WriteLine("UPDATE of {0} successful", updater.Args.Host);
             }
 
+            inFlight = null;
+
             Console.WriteLine("All successful.");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine("UPDATE failed: {0}", ex);
 
-            foreach (var updater in successful)
+            var targets = successful
+                .Concat(new[] { inFlight })
+                .Where(x => x != null)
+                .Distinct()
+                .ToArray();
+
+            foreach (var updater in targets)
             {
-                Console.WriteLine("Starting ROLLBACK of {0}", updater.Args.Host);
+                Console.WriteLine("Starting ROLLBACK of {0}", updater!.Args.Host);
 
                 updater.Rollback();
 
