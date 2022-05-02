@@ -229,7 +229,7 @@ class Updater : IDisposable
 
         UploadFile(tgzLocal, tgzDest);
 
-        RunAndLogCommand($"tar xvf {tgzDest}");
+        RunAndLogCommand($"tar xvf {tgzDest} -C {dest}");
     }
 
     private void UploadFile(string src, string dest)
