@@ -230,6 +230,8 @@ class Updater : IDisposable
         UploadFile(tgzLocal, tgzDest);
 
         RunAndLogCommand($"tar xvf {tgzDest} -C {dest}");
+
+        ForceRemovePath(tgzDest);
     }
 
     private void UploadFile(string src, string dest)
