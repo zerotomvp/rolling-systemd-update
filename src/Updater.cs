@@ -68,10 +68,10 @@ class Updater : IDisposable
 
         MovePath(tmp, serviceDef.WorkingDirectory);
 
-        // copy permissions + ownership
+        // set permissions + ownership
 
-        CopyPermissions(lastPath, serviceDef.WorkingDirectory);
-        RecursiveCopyOwnership(lastPath, serviceDef.WorkingDirectory);
+        SetPermissions(serviceDef.WorkingDirectory, "774");
+        RecursivelySetOwnership(serviceDef.WorkingDirectory, serviceDef.User);
 
         // start service
 
@@ -151,6 +151,7 @@ class Updater : IDisposable
             return new()
             {
                 WorkingDirectory = kvs["WorkingDirectory"],
+                User = kvs["User"],
                 Bindings = Utils.ParseBindings(kvs["Environment_ASPNETCORE_URLS"]).ToArray()
             };
         }
@@ -171,14 +172,14 @@ class Updater : IDisposable
         RunAndLogCommand($"mv {src} {dest}");
     }
 
-    private void CopyPermissions(string src, string dest)
+    private void SetPermissions(string dest, string permissions)
     {
-        RunAndLogCommand($"chmod --reference={src} {dest}");
+        RunAndLogCommand($"chmod {permissions} {dest}");
     }
 
-    private void RecursiveCopyOwnership(string src, string dest)
+    private void RecursivelySetOwnership(string dest, string owner)
     {
-        RunAndLogCommand($"chown -R --reference={src} {dest}");
+        RunAndLogCommand($"chown -R {owner}:{owner} {dest}");
     }
 
     private bool IsServiceRunning()
@@ -229,7 +230,7 @@ class Updater : IDisposable
 
         UploadFile(tgzLocal, tgzDest);
 
-        RunAndLogCommand($"tar xvf {tgzDest} -C {dest}");
+        RunAndLogCommand($"tar xf {tgzDest} -C {dest}");
 
         ForceRemovePath(tgzDest);
     }

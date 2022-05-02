@@ -4,5 +4,7 @@ public class ServiceDefinition
 {
     public string WorkingDirectory { get; set; } = null!;
 
+    public string User { get; set; } = null!;
+
     public string[] Bindings { get; set; } = null!;
 }
