@@ -11,4 +11,5 @@ class UpdaterArguments
     public PrivateKeyAuthenticationMethod Auth { get; set; } = null!;
     public byte[]? ExpectedFingerprint { get; set; }
     public string SourceDirectory { get; set; } = null!;
+    public bool Debug { get; set; }
 }

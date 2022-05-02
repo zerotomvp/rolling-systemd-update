@@ -101,6 +101,13 @@ class Updater : IDisposable
 
         string lastPath = $"{serviceDef.WorkingDirectory}.last";
 
+        if (Args.Debug)
+        {
+            Console.WriteLine($"WorkingDirectory={serviceDef.WorkingDirectory}");
+            Console.WriteLine($"User={serviceDef.User}");
+            Console.WriteLine($"Bindings={string.Join(",", serviceDef.Bindings)}");
+        }
+
         // stop service
 
         if (IsServiceRunning())
@@ -117,6 +124,11 @@ class Updater : IDisposable
         // move last to current
 
         MovePath(lastPath, serviceDef.WorkingDirectory);
+
+        if (Args.Debug)
+        {
+            RunAndLogCommand($"ls -l {serviceDef.WorkingDirectory}");
+        }
         
         // start
 
@@ -209,8 +221,8 @@ class Updater : IDisposable
     private void TransferFilesRecursively(string dest)
     {
         string src = Args.SourceDirectory;
-        string tgzLocal = Path.ChangeExtension(Path.GetFileName(dest), ".tgz");
-        string tgzDest = Path.ChangeExtension(dest, ".tgz");
+        string tgzLocal = $"{Path.GetFileName(dest)}.tgz";
+        string tgzDest = $"{dest}.tgz";
 
         using (var outStream = File.Create(tgzLocal))
         using (var gzoStream = new GZipOutputStream(outStream))
@@ -232,7 +244,15 @@ class Updater : IDisposable
 
         RunAndLogCommand($"tar xf {tgzDest} -C {dest}");
 
-        ForceRemovePath(tgzDest);
+        if (!Args.Debug)
+        {
+            ForceRemovePath(tgzDest);
+        }
+        else
+        {
+            RunAndLogCommand($"ls -l {tgzDest}");
+            RunAndLogCommand($"ls -l {dest}");
+        }
     }
 
     private void UploadFile(string src, string dest)

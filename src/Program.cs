@@ -31,6 +31,8 @@ public class Program
         string key = RequireEnvironmentVariable("INPUT_KEY");
         string source = RequireEnvironmentVariable("INPUT_SOURCE");
 
+        bool.TryParse(Environment.GetEnvironmentVariable("INPUT_DEBUG"), out bool debug);
+
         if (fingerprints != null && fingerprints.Length != hosts.Length)
         {
             throw new ArgumentOutOfRangeException(
@@ -55,7 +57,8 @@ public class Program
                     Username = username,
                     Auth = auth,
                     ExpectedFingerprint = expectedFingerPrints?[index],
-                    SourceDirectory = source
+                    SourceDirectory = source,
+                    Debug = debug
                 };
 
                 return new Updater(args);

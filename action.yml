@@ -28,6 +28,10 @@ inputs:
   source:
     description: Path to built files
     required: true
+  debug:
+    description: Debug
+    required: false
+    default: 'false'
 runs:
   using: docker
   image: Dockerfile
