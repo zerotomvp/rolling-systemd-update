@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SharpZipLib" Version="1.3.3" />
     <PackageReference Include="SSH.Net" Version="2020.0.1" />
   </ItemGroup>
 

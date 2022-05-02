@@ -1,4 +1,7 @@
-﻿using Renci.SshNet;
+﻿using System.IO.Compression;
+using ICSharpCode.SharpZipLib.GZip;
+using ICSharpCode.SharpZipLib.Tar;
+using Renci.SshNet;
 using Renci.SshNet.Common;
 
 namespace ZeroToMvp.Github.Actions.RollingSystemdUpdate;
@@ -205,42 +208,39 @@ class Updater : IDisposable
     private void TransferFilesRecursively(string dest)
     {
         string src = Args.SourceDirectory;
+        string tgzLocal = Path.ChangeExtension(Path.GetFileName(dest), ".tgz");
+        string tgzDest = Path.ChangeExtension(dest, ".tgz");
 
-        var files = Utils.EnumerateFilesRecursively(src)
-            .Select(relative =>
+        using (var outStream = File.Create(tgzLocal))
+        using (var gzoStream = new GZipOutputStream(outStream))
+        using (var tarArchive = TarArchive.CreateOutputTarArchive(gzoStream))
+        {
+            foreach (var file in Utils.EnumerateFilesRecursively(src))
             {
-                string fullPathDest = Path.Combine(dest, relative);
+                var tarEntry = TarEntry.CreateEntryFromFile(file.Src);
 
-                return new
-                {
-                    Relative = relative,
-                    Src = Path.Combine(src, relative),
-                    Dest = fullPathDest,
-                    DestDirectory = Path.GetDirectoryName(fullPathDest)
-                };
-            })
-            .ToArray();
+                tarEntry.Name = file.Relative;
 
-        var destDirectories = files
-            .Select(x => x.DestDirectory)
-            .Distinct()
-            .ToArray();
+                tarArchive.WriteEntry(tarEntry, true);
+            }
+        } 
+        
+        RunAndLogCommand($"mkdir -p {dest}");
 
-        foreach (var destDirectory in destDirectories)
-        {
-            RunAndLogCommand($"mkdir -p {destDirectory}");
-        }
+        UploadFile(tgzLocal, tgzDest);
 
-        foreach (var file in files)
-        {
-            Console.WriteLine($"Transfering file {file.Src} => {file.Dest}");
-
-            using var fileStream = File.OpenRead(file.Src);
-
-            sftp.UploadFile(fileStream, file.Dest);
-        }
+        RunAndLogCommand($"tar xvf {tgzDest}");
     }
 
+    private void UploadFile(string src, string dest)
+    {
+        Console.WriteLine($"Transfering file {src} => {dest}");
+
+        using var fileStream = File.OpenRead(src);
+
+        sftp.UploadFile(fileStream, dest);
+    }
+    
     private SshCommand RunAndLogCommand(string commandText)
     {
         Console.WriteLine($"$ {commandText}");

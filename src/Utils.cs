@@ -1,8 +1,24 @@
 ﻿namespace ZeroToMvp.Github.Actions.RollingSystemdUpdate;
 
+class FileEntry
+{
+    public string Relative { get; set; }
+    public string Src { get; set; }
+}
+
 static class Utils
 {
-    public static IEnumerable<string> EnumerateFilesRecursively(string top, string? dir = null)
+    public static IEnumerable<FileEntry> EnumerateFilesRecursively(string src)
+    {
+        return EnumerateFilesRecursively(src, null)
+            .Select(relative => new FileEntry
+            {
+                Relative = relative,
+                Src = Path.Combine(src, relative)
+            });
+    }
+
+    public static IEnumerable<string> EnumerateFilesRecursively(string top, string? dir)
     {
         string MakeRelative(string file) => Path.GetRelativePath(top, file);
 
