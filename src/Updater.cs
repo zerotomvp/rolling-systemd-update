@@ -273,7 +273,7 @@ class Updater : IDisposable
             {
                 var tarEntry = TarEntry.CreateEntryFromFile(file.Src);
 
-                tarEntry.Name = file.Relative;
+                tarEntry.Name = file.Path;
 
                 tarArchive.WriteEntry(tarEntry, true);
             }

@@ -2,8 +2,8 @@
 
 class FileEntry
 {
-    public string Relative { get; set; }
-    public string Src { get; set; }
+    public string Path { get; set; } = null!;
+    public string Src { get; set; } = null!;
 }
 
 static class Utils
@@ -13,7 +13,7 @@ static class Utils
         return EnumerateFilesRecursively(src, null)
             .Select(relative => new FileEntry
             {
-                Relative = relative,
+                Path = relative,
                 Src = Path.Combine(src, relative)
             });
     }
@@ -26,6 +26,8 @@ static class Utils
 
         foreach (var sub in Directory.GetDirectories(dir))
         {
+            yield return MakeRelative(sub);
+
             foreach (var file in EnumerateFilesRecursively(top, sub))
             {
                 yield return file;
