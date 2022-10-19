@@ -281,7 +281,16 @@ class Updater : IDisposable
         
         UploadFile(tgzLocal, tgzDest);
 
-        RunAndLogCommand($"tar xf {tgzDest} -C {dest}");
+        // this is required by tar
+
+        RunAndLogCommand($"mkdir -p {dest}");
+
+        var extract = RunAndLogCommand($"tar xf {tgzDest} -C {dest}");
+
+        if (extract.ExitStatus != 0)
+        {
+            throw new InvalidOperationException("Unable to extract files.");
+        }
 
         if (!Args.Debug)
         {
@@ -320,9 +329,15 @@ class Updater : IDisposable
 
         var command = ssh.RunCommand(commandText);
 
-        if (!string.IsNullOrEmpty(command.Result))
+        if (!string.IsNullOrWhiteSpace(command.Result))
         {
             Console.WriteLine("\t{0}", command.Result);
+        }
+
+        if (!string.IsNullOrWhiteSpace(command.Error))
+        {
+            Console.WriteLine($"Failed; exit code = {command.ExitStatus}");
+            Console.WriteLine(command.Error);
         }
 
         return command;
