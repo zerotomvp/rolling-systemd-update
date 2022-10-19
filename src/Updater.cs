@@ -116,6 +116,14 @@ class Updater : IDisposable
 
         CheckRequirements();
 
+        // if there isn't a last directory, quit
+
+        if (!DirectoryExists(lastPath))
+        {
+            Console.WriteLine("Rollback not possible because directory with previous installation does not exist, aborting...");
+            return;
+        }
+
         // stop service
 
         if (IsServiceRunning())
@@ -268,6 +276,8 @@ class Updater : IDisposable
                 tarArchive.WriteEntry(tarEntry, true);
             }
         } 
+
+        Console.WriteLine($"Local archive is {new FileInfo(tgzLocal).Length:###,###} bytes.");
         
         UploadFile(tgzLocal, tgzDest);
 
@@ -290,7 +300,18 @@ class Updater : IDisposable
 
         using var fileStream = File.OpenRead(src);
 
-        sftp.UploadFile(fileStream, dest);
+        sftp.UploadFile(fileStream, dest, progress =>
+        {
+            if (Args.Debug)
+            {
+                Console.WriteLine($"Transferred {progress:###,###} bytes.");
+            }
+        });
+
+        if (Args.Debug)
+        {
+            RunAndLogCommand($"stat -c '%s' {dest}");
+        }
     }
     
     private SshCommand RunAndLogCommand(string commandText)

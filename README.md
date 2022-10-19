@@ -7,21 +7,22 @@ The target application is assumed to be using `systemd` to run, as shown [here](
 The execution flow is:
 - Connect to host.
 - If `fingerprints` are set, verify them, or fail.
-- Transfer the built files from `source` to `/tmp/{serviceName}.{github.run_number}.{gitub.run_attempt}`.
+- Transfer the built files from `source` to `/tmp/{serviceName}.{github.run_number}.{gitub.run_attempt}` using a tgz archive.
 - If the service is running, stop it.
-- Delete `{WorkingDirectory}.last`.
-- Move `{WorkingDirectory}` to `{WorkingDirectory}.last`.
-- Move the temporary directory with the built files to `{WorkingDirectory}`.
-- Copy permissions and ownership from `{WorkingDirectory}.last` to `{WorkingDirectory}`.
+- Delete `{WorkingDirectory}.last`, if it exists.
+- Move `{WorkingDirectory}` to `{WorkingDirectory}.last`, if it exists.
+- Extract the tgz file to `{WorkingDirectory}`.
+- Set permissions and ownership to `{WorkingDirectory}`.
 - Start service.
 - Probe the first binding found, path `/api/health` for a `200` status code, every 1 sec for 1 min.
 
 If probing is successful, the next host is updated.
 
 If probing fails until the end of the tries, then a rollback is initiated for all hosts that succeeded and the host that was being updated when the failure occurred:
+- If `{WorkingDirectory.last}` does not exist, abort.
 - If the service is running, stop it.
 - Delete `{WorkingDirectory}`.
-- Move `{WorkingDirectory}.last` to `{WorkingDirectory}`.
+- Move `{WorkingDirectory}.last` back to `{WorkingDirectory}`.
 - Start service.
 - Probe the first binding found, path `/api/health` for a `200` status code, every 1 sec for 1 min.
 
