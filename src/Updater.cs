@@ -1,5 +1,4 @@
-﻿using System.IO.Compression;
-using ICSharpCode.SharpZipLib.GZip;
+﻿using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using Renci.SshNet;
 using Renci.SshNet.Common;
@@ -32,15 +31,16 @@ class Updater : IDisposable
     public void Execute()
     {
         ssh.Connect();
-        sftp.Connect();
 
         // get service definition first, it could fail
 
         var serviceDef = GetServiceDefinition();
 
         string lastPath = $"{serviceDef.WorkingDirectory}.last";
-        
+
         // copy files
+
+        sftp.Connect();
 
         string runNumber = Environment.GetEnvironmentVariable("GITHUB_RUN_NUMBER")!;
         string runAttempt = Environment.GetEnvironmentVariable("GITHUB_RUN_ATTEMPT")!;
@@ -56,13 +56,23 @@ class Updater : IDisposable
             StopService();
         }
 
-        // remove last
+        // remove last, if exists
 
-        ForceRemovePath(lastPath);
+        if (DirectoryExists(lastPath))
+        {
+            ForceRemovePath(lastPath);
+        }
 
-        // move current to last
+        // move current to last, if exists
 
-        MovePath(serviceDef.WorkingDirectory, lastPath);
+        if (DirectoryExists(serviceDef.WorkingDirectory))
+        {
+            MovePath(serviceDef.WorkingDirectory, lastPath);
+        }
+        else
+        {
+            RunAndLogCommand($"mkdir -p {serviceDef.WorkingDirectory}");
+        }
 
         // move temp to current
 
@@ -108,6 +118,8 @@ class Updater : IDisposable
             Console.WriteLine($"Bindings={string.Join(",", serviceDef.Bindings)}");
         }
 
+        CheckRequirements();
+
         // stop service
 
         if (IsServiceRunning())
@@ -116,8 +128,6 @@ class Updater : IDisposable
         }
 
         // delete current
-
-        // TODO: check last exists first
 
         ForceRemovePath(serviceDef.WorkingDirectory);
 
@@ -150,6 +160,15 @@ class Updater : IDisposable
         }
 
         throw new InvalidOperationException("Service didn't start after rollback");
+    }
+
+    private void CheckRequirements()
+    {
+        if (ssh.RunCommand("which curl &> /dev/null").ExitStatus != 0)
+        {
+            throw new InvalidOperationException(
+                "curl needs to be installed on the target host(s)");
+        }
     }
 
     ServiceDefinition GetServiceDefinition()
@@ -201,6 +220,13 @@ class Updater : IDisposable
         return cmd.ExitStatus == 0;
     }
 
+    private bool DirectoryExists(string path)
+    {
+        var cmd = RunAndLogCommand($"test -d {path}");
+
+        return cmd.ExitStatus == 0;
+    }
+
     private void StopService()
     {
         RunAndLogCommand($"systemctl stop {Args.ServiceName}");
@@ -221,6 +247,15 @@ class Updater : IDisposable
     private void TransferFilesRecursively(string dest)
     {
         string src = Args.SourceDirectory;
+        var files = Utils.EnumerateFilesRecursively(src).ToArray();
+
+        if(!files.Any())
+        {
+            throw new InvalidOperationException("No files found in source directory.");
+        }
+
+        Console.WriteLine($"Found {files.Length} files in source directory, creating tar archive...");
+
         string tgzLocal = $"{Path.GetFileName(dest)}.tgz";
         string tgzDest = $"{dest}.tgz";
 
@@ -228,7 +263,7 @@ class Updater : IDisposable
         using (var gzoStream = new GZipOutputStream(outStream))
         using (var tarArchive = TarArchive.CreateOutputTarArchive(gzoStream))
         {
-            foreach (var file in Utils.EnumerateFilesRecursively(src))
+            foreach (var file in files)
             {
                 var tarEntry = TarEntry.CreateEntryFromFile(file.Src);
 
@@ -238,8 +273,6 @@ class Updater : IDisposable
             }
         } 
         
-        RunAndLogCommand($"mkdir -p {dest}");
-
         UploadFile(tgzLocal, tgzDest);
 
         RunAndLogCommand($"tar xf {tgzDest} -C {dest}");
