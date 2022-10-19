@@ -219,9 +219,11 @@ class Updater : IDisposable
 
     private bool IsServiceRunning()
     {
-        var cmd = RunAndLogCommand($"systemctl is-active --quiet {Args.ServiceName}");
+        var cmd = RunAndLogCommand($"systemctl is-active {Args.ServiceName}");
 
-        return cmd.ExitStatus == 0;
+        string status = cmd.Result.Trim();
+
+        return status is not "inactive" and not "failed";
     }
 
     private bool DirectoryExists(string path)
@@ -258,7 +260,7 @@ class Updater : IDisposable
             throw new InvalidOperationException("No files found in source directory.");
         }
 
-        Console.WriteLine($"Found {files.Length} files in source directory, creating tar archive...");
+        Console.WriteLine($"Found {files.Length} files in {src}, creating tar archive...");
 
         string tgzLocal = $"{Path.GetFileName(dest)}.tgz";
         string tgzDest = $"{dest}.tgz";
@@ -325,9 +327,9 @@ class Updater : IDisposable
     
     private SshCommand RunAndLogCommand(string commandText)
     {
-        Console.WriteLine($"$ {commandText}");
-
         var command = ssh.RunCommand(commandText);
+
+        Console.WriteLine($"$ {commandText} (exit={command.ExitStatus})");
 
         if (!string.IsNullOrWhiteSpace(command.Result))
         {
