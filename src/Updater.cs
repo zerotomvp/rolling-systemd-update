@@ -69,10 +69,6 @@ class Updater : IDisposable
         {
             MovePath(serviceDef.WorkingDirectory, lastPath);
         }
-        else
-        {
-            RunAndLogCommand($"mkdir -p {serviceDef.WorkingDirectory}");
-        }
 
         // move temp to current
 
