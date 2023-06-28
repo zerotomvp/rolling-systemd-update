@@ -32,6 +32,10 @@ inputs:
     description: Debug
     required: false
     default: 'false'
+  healthcheck:
+    description: Enable health check after update
+    required: false
+    default: 'true'
 runs:
   using: docker
   image: Dockerfile
