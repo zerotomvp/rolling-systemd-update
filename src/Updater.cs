@@ -47,6 +47,13 @@ class Updater : IDisposable
 
         string tmp = $"/tmp/{Args.ServiceName}.{runNumber}.{runAttempt}";
 
+        // debug
+
+        if (Args.Debug)
+        {
+            RunAndLogCommand($"echo \"CWD is $(pwd).\"");
+        }
+
         TransferFilesRecursively(tmp);
 
         // run update
@@ -267,7 +274,7 @@ class Updater : IDisposable
 
     private void TransferFilesRecursively(string dest)
     {
-        string src = Args.SourceDirectory;
+        string src = Path.GetFullPath(Args.SourceDirectory);
 
         Console.WriteLine("Creating tar archive...");
 
