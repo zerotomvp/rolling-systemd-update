@@ -267,14 +267,10 @@ class Updater : IDisposable
 
     private void TransferFilesRecursively(string dest)
     {
-        string src = Path.GetFullPath(Args.SourceDirectory);
+        string src = Path.Combine(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")!, Args.SourceDirectory);
 
         if (Args.Debug)
         {
-            Console.WriteLine("Listing current working directory.");
-
-            RunAndLogCommand($"ls -l {Directory.GetCurrentDirectory()}");
-
             Console.WriteLine("Listing source directory.");
 
             RunAndLogCommand($"ls -l {src}");
