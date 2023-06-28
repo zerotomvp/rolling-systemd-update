@@ -6,5 +6,5 @@ public class ServiceDefinition
 
     public string User { get; set; } = null!;
 
-    public string[] Bindings { get; set; } = null!;
+    public string[]? Bindings { get; set; }
 }

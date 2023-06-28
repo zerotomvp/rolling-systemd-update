@@ -12,4 +12,5 @@ class UpdaterArguments
     public byte[]? ExpectedFingerprint { get; set; }
     public string SourceDirectory { get; set; } = null!;
     public bool Debug { get; set; }
+    public bool HealthCheck { get; set; } = true;
 }

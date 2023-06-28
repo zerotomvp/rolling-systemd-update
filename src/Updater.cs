@@ -85,20 +85,23 @@ class Updater : IDisposable
 
         // wait for it to come up
 
-        var firstBinding = serviceDef.Bindings.First();
-
-        for (int i = 0; i < 60; ++i)
+        if (Args.HealthCheck)
         {
-            if (CheckHttpStatus(firstBinding))
+            var firstBinding = serviceDef.Bindings.First();
+
+            for (int i = 0; i < 60; ++i)
             {
-                Console.WriteLine("Update completed.");
-                return;
+                if (CheckHttpStatus(firstBinding))
+                {
+                    Console.WriteLine("Update completed.");
+                    return;
+                }
+
+                Thread.Sleep(1000);
             }
 
-            Thread.Sleep(1000);
+            throw new InvalidOperationException("Service didn't start after update");
         }
-
-        throw new InvalidOperationException("Service didn't start after update");
     }
 
     public void Rollback()
@@ -150,20 +153,23 @@ class Updater : IDisposable
 
         // wait for it to come up
 
-        var firstBinding = serviceDef.Bindings.First();
-
-        for (int i = 0; i < 60; ++i)
+        if (Args.HealthCheck)
         {
-            if (CheckHttpStatus(firstBinding))
+            var firstBinding = serviceDef.Bindings.First();
+
+            for (int i = 0; i < 60; ++i)
             {
-                Console.WriteLine("Rollback completed.");
-                return;
+                if (CheckHttpStatus(firstBinding))
+                {
+                    Console.WriteLine("Rollback completed.");
+                    return;
+                }
+
+                Thread.Sleep(1000);
             }
 
-            Thread.Sleep(1000);
+            throw new InvalidOperationException("Service didn't start after rollback");
         }
-
-        throw new InvalidOperationException("Service didn't start after rollback");
     }
 
     private void CheckRequirements()
@@ -183,17 +189,26 @@ class Updater : IDisposable
 
         try
         {
-            return new()
+            var definition = new ServiceDefinition
             {
                 WorkingDirectory = kvs["WorkingDirectory"],
-                User = kvs["User"],
-                Bindings = Utils.ParseBindings(kvs["Environment_ASPNETCORE_URLS"]).ToArray()
+                User = kvs["User"]
             };
+            
+            if (Args.HealthCheck)
+            {
+                definition.Bindings = Utils.ParseBindings(kvs["Environment_ASPNETCORE_URLS"]).ToArray();
+            }
+
+            return definition;
         }
         catch (KeyNotFoundException)
         {
-            throw new InvalidOperationException(
-                $"The service definition must define the WorkingDirectory and the ASPNETCORE_URLS env variable; found: {cmd.Result}");
+            string message = Args.HealthCheck
+                ? $"The service definition must define the WorkingDirectory and the ASPNETCORE_URLS env variable; found: {cmd.Result}"
+                : $"The service definition must define the WorkingDirectory; found: {cmd.Result}";
+
+            throw new InvalidOperationException(message);
         }
     }
 

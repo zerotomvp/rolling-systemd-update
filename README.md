@@ -2,7 +2,9 @@
 
 We created this GitHub action to be able to have zero-downtime rolling updates of our Linux-based clusters running ASP.NET Core applications.
 
-The target application is assumed to be using `systemd` to run, as shown [here](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-6.0#create-the-service-file). The service definition MUST include `WorkingDirectory` and define the `ASPNETCORE_URLS` environment variable, so that the action can test that the service came back online.
+The target application is assumed to be using `systemd` to run, as shown [here](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-6.0#create-the-service-file). 
+
+The service definition MUST include `WorkingDirectory` and define the `ASPNETCORE_URLS` environment variable, so that the action can test that the service came back online. If this is not desired, you can set `healthcheck: false`.
 
 The execution flow is:
 - Connect to host.

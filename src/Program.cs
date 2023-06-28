@@ -32,6 +32,7 @@ public class Program
         string source = RequireEnvironmentVariable("INPUT_SOURCE");
 
         bool.TryParse(Environment.GetEnvironmentVariable("INPUT_DEBUG"), out bool debug);
+        bool healthCheckDefined = bool.TryParse(Environment.GetEnvironmentVariable("INPUT_HEALTHCHECK"), out bool healthCheck);
 
         if (fingerprints != null && fingerprints.Length != hosts.Length)
         {
@@ -58,7 +59,8 @@ public class Program
                     Auth = auth,
                     ExpectedFingerprint = expectedFingerPrints?[index],
                     SourceDirectory = source,
-                    Debug = debug
+                    Debug = debug,
+                    HealthCheck = !healthCheckDefined || healthCheck
                 };
 
                 return new Updater(args);
