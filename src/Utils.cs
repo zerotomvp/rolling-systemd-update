@@ -8,38 +8,6 @@ class FileEntry
 
 static class Utils
 {
-    public static IEnumerable<FileEntry> EnumerateFilesRecursively(string src)
-    {
-        return EnumerateFilesRecursively(src, null)
-            .Select(relative => new FileEntry
-            {
-                Path = relative,
-                Src = Path.Combine(src, relative)
-            });
-    }
-
-    public static IEnumerable<string> EnumerateFilesRecursively(string top, string? dir)
-    {
-        string MakeRelative(string file) => Path.GetRelativePath(top, file);
-
-        dir ??= top;
-
-        foreach (var sub in Directory.GetDirectories(dir))
-        {
-            yield return MakeRelative(sub);
-
-            foreach (var file in EnumerateFilesRecursively(top, sub))
-            {
-                yield return file;
-            }
-        }
-
-        foreach (var file in Directory.GetFiles(dir))
-        {
-            yield return MakeRelative(file);
-        }
-    }
-
     public static Dictionary<string, string> ParseKeyValues(string s)
     {
         return s

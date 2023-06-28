@@ -268,31 +268,19 @@ class Updater : IDisposable
     private void TransferFilesRecursively(string dest)
     {
         string src = Args.SourceDirectory;
-        var files = Utils.EnumerateFilesRecursively(src).ToArray();
 
-        if(!files.Any())
+        Console.WriteLine("Creating tar archive...");
+
+        if (!Directory.GetFiles(src).Any())
         {
             throw new InvalidOperationException("No files found in source directory.");
         }
 
-        Console.WriteLine($"Found {files.Length} files in {src}, creating tar archive...");
-
         string tgzLocal = $"{Path.GetFileName(dest)}.tgz";
         string tgzDest = $"{dest}.tgz";
+        string extraFlags = Args.Debug ? "v" : string.Empty;
 
-        using (var outStream = File.Create(tgzLocal))
-        using (var gzoStream = new GZipOutputStream(outStream))
-        using (var tarArchive = TarArchive.CreateOutputTarArchive(gzoStream))
-        {
-            foreach (var file in files)
-            {
-                var tarEntry = TarEntry.CreateEntryFromFile(file.Src);
-
-                tarEntry.Name = file.Path;
-
-                tarArchive.WriteEntry(tarEntry, true);
-            }
-        } 
+        RunAndLogCommand($"tar czf{extraFlags} {tgzLocal} -C {src}");
 
         Console.WriteLine($"Local archive is {new FileInfo(tgzLocal).Length:###,###} bytes.");
         
