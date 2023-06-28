@@ -291,7 +291,7 @@ class Updater : IDisposable
 
         proc.WaitForExit();
 
-        Console.WriteLine($"EOF; exit code = {proc.ExitCode}");
+        Console.WriteLine($"$ {command} (exit={proc.ExitCode})");
 
         return proc.ExitCode;
     }
