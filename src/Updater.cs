@@ -87,7 +87,7 @@ class Updater : IDisposable
 
         if (Args.HealthCheck)
         {
-            var firstBinding = serviceDef.Bindings.First();
+            var firstBinding = serviceDef.Bindings!.First();
 
             for (int i = 0; i < 60; ++i)
             {
@@ -114,7 +114,7 @@ class Updater : IDisposable
         {
             Console.WriteLine($"WorkingDirectory={serviceDef.WorkingDirectory}");
             Console.WriteLine($"User={serviceDef.User}");
-            Console.WriteLine($"Bindings={string.Join(",", serviceDef.Bindings)}");
+            Console.WriteLine($"Bindings={string.Join(",", serviceDef.Bindings ?? Array.Empty<string>())}");
         }
 
         CheckRequirements();
@@ -155,7 +155,7 @@ class Updater : IDisposable
 
         if (Args.HealthCheck)
         {
-            var firstBinding = serviceDef.Bindings.First();
+            var firstBinding = serviceDef.Bindings!.First();
 
             for (int i = 0; i < 60; ++i)
             {
