@@ -280,7 +280,7 @@ class Updater : IDisposable
         string tgzDest = $"{dest}.tgz";
         string extraFlags = Args.Debug ? "v" : string.Empty;
 
-        RunAndLogCommand($"tar czf{extraFlags} {tgzLocal} -C {src}");
+        RunAndLogCommand($"find {src} -printf \"%P\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
 
         Console.WriteLine($"Local archive is {new FileInfo(tgzLocal).Length:###,###} bytes.");
         
