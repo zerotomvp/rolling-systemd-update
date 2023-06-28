@@ -274,6 +274,10 @@ class Updater : IDisposable
             Console.WriteLine("Listing source directory.");
 
             RunAndLogCommand($"ls -l {src}");
+
+            Console.WriteLine("Listing source parent directory.");
+
+            RunAndLogCommand($"ls -l {src}/../");
         }
 
         Console.WriteLine("Creating tar archive...");
