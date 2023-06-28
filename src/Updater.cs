@@ -1,6 +1,4 @@
-﻿using ICSharpCode.SharpZipLib.GZip;
-using ICSharpCode.SharpZipLib.Tar;
-using Renci.SshNet;
+﻿using Renci.SshNet;
 using Renci.SshNet.Common;
 
 namespace ZeroToMvp.Github.Actions.RollingSystemdUpdate;
@@ -48,11 +46,6 @@ class Updater : IDisposable
         string tmp = $"/tmp/{Args.ServiceName}.{runNumber}.{runAttempt}";
 
         // debug
-
-        if (Args.Debug)
-        {
-            RunAndLogCommand($"echo \"CWD is $(pwd).\"");
-        }
 
         TransferFilesRecursively(tmp);
 
@@ -276,6 +269,17 @@ class Updater : IDisposable
     {
         string src = Path.GetFullPath(Args.SourceDirectory);
 
+        if (Args.Debug)
+        {
+            Console.WriteLine("Listing current working directory.");
+
+            RunAndLogCommand($"ls -l {Directory.GetCurrentDirectory()}");
+
+            Console.WriteLine("Listing source directory.");
+
+            RunAndLogCommand($"ls -l {src}");
+        }
+
         Console.WriteLine("Creating tar archive...");
 
         if (!Directory.GetFiles(src).Any())
@@ -287,7 +291,12 @@ class Updater : IDisposable
         string tgzDest = $"{dest}.tgz";
         string extraFlags = Args.Debug ? "v" : string.Empty;
 
-        RunAndLogCommand($"find {src} -printf \"%P\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
+        var cmd = RunAndLogCommand($"find {src} -printf \"%P\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
+
+        if (cmd.ExitStatus != 0)
+        {
+            throw new InvalidOperationException("Failed to create archive");
+        }
 
         Console.WriteLine($"Local archive is {new FileInfo(tgzLocal).Length:###,###} bytes.");
         
