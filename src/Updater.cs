@@ -318,7 +318,7 @@ class Updater : IDisposable
         string tgzDest = $"{dest}.tgz";
         string extraFlags = Args.Debug ? "v" : string.Empty;
 
-        var tarExitCode = RunOnWorker($"find {src} -printf \"%P\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
+        var tarExitCode = RunOnWorker($"find {src} -printf \"%P\\\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
 
         if (tarExitCode != 0)
         {
