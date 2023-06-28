@@ -275,9 +275,8 @@ class Updater : IDisposable
 
             RunAndLogCommand($"ls -l {src}");
 
-            Console.WriteLine("Listing source parent directory.");
-
-            RunAndLogCommand($"ls -l {src}/../");
+            RunAndLogCommand($"ls -l {Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")}");
+            RunAndLogCommand($"ls -l {Environment.GetEnvironmentVariable("HOME")}");
         }
 
         Console.WriteLine("Creating tar archive...");
