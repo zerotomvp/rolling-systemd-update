@@ -1,4 +1,5 @@
-﻿using Renci.SshNet;
+﻿using System.Diagnostics;
+using Renci.SshNet;
 using Renci.SshNet.Common;
 
 namespace ZeroToMvp.Github.Actions.RollingSystemdUpdate;
@@ -265,6 +266,36 @@ class Updater : IDisposable
         return cmd.Result == expectedStatus.ToString();
     }
 
+    private int RunOnWorker(string command)
+    {
+        Process proc = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "/bin/bash",
+                Arguments = $"-c \"{command}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            }
+        };
+        
+        proc.Start();
+        
+        while (!proc.StandardOutput.EndOfStream)
+        {
+            string line = proc.StandardOutput.ReadLine()!;
+            
+            Console.WriteLine(line);
+        }
+
+        proc.WaitForExit();
+
+        Console.WriteLine($"EOF; exit code = {proc.ExitCode}");
+
+        return proc.ExitCode;
+    }
+
     private void TransferFilesRecursively(string dest)
     {
         string src = Path.Combine(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")!, Args.SourceDirectory);
@@ -273,10 +304,7 @@ class Updater : IDisposable
         {
             Console.WriteLine("Listing source directory.");
 
-            RunAndLogCommand($"ls -l {src}");
-
-            RunAndLogCommand($"ls -l {Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")}");
-            RunAndLogCommand($"ls -l {Environment.GetEnvironmentVariable("HOME")}");
+            RunOnWorker($"ls -l {src}");
         }
 
         Console.WriteLine("Creating tar archive...");
@@ -290,11 +318,11 @@ class Updater : IDisposable
         string tgzDest = $"{dest}.tgz";
         string extraFlags = Args.Debug ? "v" : string.Empty;
 
-        var cmd = RunAndLogCommand($"find {src} -printf \"%P\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
+        var tarExitCode = RunOnWorker($"find {src} -printf \"%P\\n\" | tar -czf{extraFlags} {tgzLocal} --no-recursion -C {src} -T -");
 
-        if (cmd.ExitStatus != 0)
+        if (tarExitCode != 0)
         {
-            throw new InvalidOperationException("Failed to create archive");
+            throw new InvalidOperationException("Failed to create archive.");
         }
 
         Console.WriteLine($"Local archive is {new FileInfo(tgzLocal).Length:###,###} bytes.");
