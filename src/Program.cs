@@ -33,6 +33,7 @@ public class Program
 
         bool.TryParse(Environment.GetEnvironmentVariable("INPUT_DEBUG"), out bool debug);
         bool healthCheckDefined = bool.TryParse(Environment.GetEnvironmentVariable("INPUT_HEALTHCHECK"), out bool healthCheck);
+        string healthCheckPath = RequireEnvironmentVariable("INPUT_HEALTHCHECKPATH");
 
         if (fingerprints != null && fingerprints.Length != hosts.Length)
         {
@@ -50,6 +51,8 @@ public class Program
         var updaters = hosts
             .Select((host, index) =>
             {
+                bool hasHealthCheck = !healthCheckDefined || healthCheck;
+
                 var args = new UpdaterArguments
                 {
                     ServiceName = serviceName,
@@ -60,7 +63,8 @@ public class Program
                     ExpectedFingerprint = expectedFingerPrints?[index],
                     SourceDirectory = source,
                     Debug = debug,
-                    HealthCheck = !healthCheckDefined || healthCheck
+                    HealthCheck = hasHealthCheck,
+                    HealthCheckPath = string.IsNullOrWhiteSpace(healthCheckPath) ? "/api/health" : healthCheckPath
                 };
 
                 return new Updater(args);

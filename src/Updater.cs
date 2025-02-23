@@ -92,7 +92,7 @@ class Updater : IDisposable
 
             for (int i = 0; i < 60; ++i)
             {
-                if (CheckHttpStatus(firstBinding))
+                if (CheckHttpStatus(firstBinding, Args.HealthCheckPath))
                 {
                     Console.WriteLine("Update completed.");
                     return;
@@ -160,7 +160,7 @@ class Updater : IDisposable
 
             for (int i = 0; i < 60; ++i)
             {
-                if (CheckHttpStatus(firstBinding))
+                if (CheckHttpStatus(firstBinding, Args.HealthCheckPath))
                 {
                     Console.WriteLine("Rollback completed.");
                     return;

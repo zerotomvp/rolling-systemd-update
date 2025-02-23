@@ -13,4 +13,5 @@ class UpdaterArguments
     public string SourceDirectory { get; set; } = null!;
     public bool Debug { get; set; }
     public bool HealthCheck { get; set; } = true;
+    public string HealthCheckPath { get; set; } = null!;
 }
