@@ -33,7 +33,7 @@ public class Program
 
         bool.TryParse(Environment.GetEnvironmentVariable("INPUT_DEBUG"), out bool debug);
         bool healthCheckDefined = bool.TryParse(Environment.GetEnvironmentVariable("INPUT_HEALTHCHECK"), out bool healthCheck);
-        string healthCheckPath = RequireEnvironmentVariable("INPUT_HEALTHCHECKPATH");
+        string? healthCheckPath = Environment.GetEnvironmentVariable("INPUT_HEALTHCHECKPATH");
 
         if (fingerprints != null && fingerprints.Length != hosts.Length)
         {
