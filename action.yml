@@ -36,6 +36,10 @@ inputs:
     description: Enable health check after update
     required: false
     default: 'true'
+  healthcheckPath:
+    description: Health check URL path i.e. http://<service>:<port>/<path>
+    required: false
+    default: '/api/health'
 runs:
   using: docker
   image: Dockerfile
